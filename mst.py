@@ -32,3 +32,10 @@ class Mst:
 
     def get_vertex(self, index: int) -> Vertex:
         return self._vertex[index]
+
+    def get_vertex_by_value(self, value: int) -> Vertex:
+        for v in self._vertex:
+            if v._value == value:
+                return v
+        
+        return None
