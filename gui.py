@@ -165,9 +165,20 @@ class Gui:
         '''
         선분의 좌표와 정점 리스트를 제공, 충돌 처리 필요
         '''
+        print('line segment coords:', self.input_canvas.coords(edge_id))
+
+        overlapping = self.input_canvas.find_overlapping(*self.input_canvas.coords(edge_id))
+
+        print('Overlapping objects:', overlapping)
+        print('Edge id:', edge_id)
+
+        # Overlapping canvas item type
+        # filter with type?
+        for id in overlapping:
+            print(id, self.input_canvas.type(id))
         
-        print(self.input_canvas.coords(edge_id))
-        print(vertex_list)
+        for v in vertex_list:
+            print(v._x, v._y)
 
 def weight_validate(input: str) -> bool:
     if input.isdigit() or input == "":
