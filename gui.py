@@ -89,8 +89,8 @@ class Gui:
         
         self._tree.add_vertex(event.x, event.y)
 
-        src_vertexs = [str(v._value) for v in self._tree._vertex]
-        dst_vertexs = [str(v._value) for v in self._tree._vertex]
+        src_vertexs = [str(v.value) for v in self._tree._vertex]
+        dst_vertexs = [str(v.value) for v in self._tree._vertex]
         
         src_value = self.src_combobox.get()
         if src_value != "":
@@ -105,16 +105,17 @@ class Gui:
 
         v: Vertex = self._tree.get_vertex(self._tree._count - 1)
 
-        circle_tuple = calc_circle(v._x, v._y, 15)
+        circle_tuple = calc_circle(v.x, v.y, 15)
         circle = canvas.create_oval(circle_tuple[0], circle_tuple[1], circle_tuple[2], circle_tuple[3], fill='cyan')
-        canvas.create_text(v._x, v._y, text=str(v._value))
+        canvas.create_text(v.x, v.y, text=str(v.value))
+        v.canvas_id = circle
 
-        self._circles[str(v._value)] = circle
+        self._circles[str(v.value)] = circle
 
     def src_selected(self, event: Event):
         src: Combobox = event.widget
         
-        dst_list = [str(v._value) for v in self._tree._vertex]
+        dst_list = [str(v.value) for v in self._tree._vertex]
         dst_list.remove(src.get())
 
         self.dst_combobox['values'] = dst_list
@@ -122,7 +123,7 @@ class Gui:
     def dst_selected(self, event: Event):
         dst: Combobox = event.widget
 
-        src_list = [str(v._value) for v in self._tree._vertex]
+        src_list = [str(v.value) for v in self._tree._vertex]
         src_list.remove(dst.get())
 
         self.src_combobox['values'] = src_list
@@ -143,7 +144,7 @@ class Gui:
             selected_src = self._tree.get_vertex_by_value(int(src))
             selected_dst = self._tree.get_vertex_by_value(int(dst))
 
-            edge_id = self.input_canvas.create_line(selected_src._x, selected_src._y, selected_dst._x, selected_dst._y)
+            edge_id = self.input_canvas.create_line(selected_src.x, selected_src.y, selected_dst.x, selected_dst.y)
             
             # 간선 충돌 처리
 
@@ -165,20 +166,18 @@ class Gui:
         '''
         선분의 좌표와 정점 리스트를 제공, 충돌 처리 필요
         '''
-        print('line segment coords:', self.input_canvas.coords(edge_id))
 
+        # Fast non-collision test
         overlapping = self.input_canvas.find_overlapping(*self.input_canvas.coords(edge_id))
 
-        print('Overlapping objects:', overlapping)
-        print('Edge id:', edge_id)
-
-        # Overlapping canvas item type
-        # filter with type?
-        for id in overlapping:
-            print(id, self.input_canvas.type(id))
-        
         for v in vertex_list:
-            print(v._x, v._y)
+            if v.canvas_id in overlapping:
+                return False
+
+        # Collision detection with line segment - circle intersection
+        # https://www.geeksforgeeks.org/check-line-touches-intersects-circle/
+        
+        return True
 
 def weight_validate(input: str) -> bool:
     if input.isdigit() or input == "":

@@ -1,12 +1,13 @@
 class Vertex:
-    _x = 0
-    _y = 0
-    _value = 0
+    x = 0
+    y = 0
+    value = 0
+    canvas_id = 0
 
     def __init__(self, x: int, y: int, value: int) -> None:
-        self._x = x
-        self._y = y
-        self._value = value
+        self.x = x
+        self.y = y
+        self.value = value
 
 class Edge:
     _start: Vertex
@@ -35,7 +36,7 @@ class Mst:
 
     def get_vertex_by_value(self, value: int) -> Vertex:
         for v in self._vertex:
-            if v._value == value:
+            if v.value == value:
                 return v
         
         return None
