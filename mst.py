@@ -1,3 +1,7 @@
+from collections import deque
+from sys import maxsize
+from tkinter.constants import S
+
 class Vertex:
     x = 0
     y = 0
@@ -44,8 +48,24 @@ class Mst:
         
         return None
 
+    def get_edge_by_vertex(self, v: Vertex) -> list:
+        result = []
+
+        for e in self._edge:
+            if e.start is v or e.end is v:
+                result.append(e)
+        
+        return result
+
     def prim(self, *, half=False):
-        pass
+        start = self.get_vertex(0)
+        connected = [start]
+
+        for edge in self.get_edge_by_vertex(start):
+            pass
+
+        while len(self._vertex) != len(connected):
+            pass
 
     def kruskal(self, *, half=False):
         pass
