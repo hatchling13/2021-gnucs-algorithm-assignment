@@ -10,19 +10,22 @@ class Vertex:
         self.value = value
 
 class Edge:
-    _start: Vertex
-    _end: Vertex
+    start: Vertex
+    end: Vertex
+    weight: int
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, start: Vertex, end: Vertex, weight: int) -> None:
+        self.start = start
+        self.end = end
+        self.weight = weight
 
 class Mst:
     _count = 0
     _edge = []
     _vertex = []
 
-    def __init__(self) -> None:
-        pass
+    def add_edge(self, start: Vertex, end: Vertex, weight: int) -> None:
+        self._edge.append(Edge(start, end, weight))
 
     def add_vertex(self, x: int, y: int) -> None:
         self._count += 1
@@ -40,3 +43,9 @@ class Mst:
                 return v
         
         return None
+
+    def prim(self, *, half=False):
+        pass
+
+    def kruskal(self, *, half=False):
+        pass

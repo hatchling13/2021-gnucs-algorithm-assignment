@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import *
 
-from mst import Mst, Vertex
+from mst import *
 
 class Gui:
     _tree = Mst()
@@ -107,7 +107,7 @@ class Gui:
 
         circle_tuple = calc_circle(v.x, v.y, 15)
         circle = canvas.create_oval(circle_tuple[0], circle_tuple[1], circle_tuple[2], circle_tuple[3], fill='cyan')
-        canvas.create_text(v.x, v.y, text=str(v.value))
+        canvas.create_text(v.x, v.y, text=str(v.value), font=('Helvetica', 13, 'bold'))
         v.canvas_id = circle
 
         self._circles[str(v.value)] = circle
@@ -129,6 +129,8 @@ class Gui:
         self.src_combobox['values'] = src_list
 
     def add_button_pressed(self):
+        canvas: Canvas = self.input_canvas
+
         src: str = self.src_combobox.get()
         dst: str = self.dst_combobox.get()
         weight: str = self.weight_entry.get()
@@ -144,40 +146,86 @@ class Gui:
             selected_src = self._tree.get_vertex_by_value(int(src))
             selected_dst = self._tree.get_vertex_by_value(int(dst))
 
-            edge_id = self.input_canvas.create_line(selected_src.x, selected_src.y, selected_dst.x, selected_dst.y)
+            edge_id = canvas.create_line(selected_src.x, selected_src.y, selected_dst.x, selected_dst.y)
+
+            # 가중치 그리기 처리
+            edge_coord: list = canvas.coords(edge_id)
+            x0, y0, x1, y1 = edge_coord
+            midpoint = ((x1 + x0) // 2, (y1 + y0) // 2)
+            weight_id = canvas.create_text(*midpoint, text=weight, font=('Helvetica', 13, 'bold'))
+            weight_bbox = canvas.bbox(weight_id)
+            weight_background_id = canvas.create_rectangle(weight_bbox, fill='magenta')
+            canvas.tag_raise(weight_id, weight_background_id)
             
             # 간선 충돌 처리
-
             vertex_list = [v for v in self._tree._vertex]
 
             vertex_list.remove(selected_src)
             vertex_list.remove(selected_dst)
 
-            if self.collision_detect(edge_id, vertex_list):
-                pass
+            if self.collision_detect(edge_coord, vertex_list):
+                canvas.delete(weight_id)
+                canvas.delete(weight_background_id)
+                canvas.delete(edge_id)
+                messagebox.showerror('입력 오류', '간선과 겹치는 정점이 있습니다.')
+            else:
+                self._tree.add_edge(selected_src, selected_dst, int(weight))
     
     def half_button_pressed(self):
-        print('half')
+        self._tree.prim(half=True)
+        self._tree.kruskal(half=True)
+
+        self.draw_result_vertex()
 
     def result_button_pressed(self):
-        print('result')
+        self._tree.prim()
+        self._tree.kruskal()
 
-    def collision_detect(self, edge_id: int, vertex_list: list) -> bool:
-        '''
-        선분의 좌표와 정점 리스트를 제공, 충돌 처리 필요
-        '''
+        self.draw_result_vertex()
 
-        # Fast non-collision test
-        overlapping = self.input_canvas.find_overlapping(*self.input_canvas.coords(edge_id))
+    def draw_result_vertex(self):
+        input_width = self.input_canvas.winfo_width()
+        prim_width = self.prim_canvas.winfo_width()
+        kruskal_width = self.kruskal_canvas.winfo_width()
+
+        for v in self._tree._vertex:
+            prim_proportional_x = int(prim_width / input_width * v.x)
+
+            circle_tuple = calc_circle(prim_proportional_x, v.y, 15)
+            self.prim_canvas.create_oval(circle_tuple, fill='magenta')
+
+            kruskal_proportional_x = int(kruskal_width / input_width * v.x)
+
+            circle_tuple = calc_circle(kruskal_proportional_x, v.y, 15)
+            self.kruskal_canvas.create_oval(circle_tuple, fill='black')
+
+    def collision_detect(self, edge_coord: list, vertex_list: list) -> bool:
+        canvas: Canvas = self.input_canvas
+        
+        # Collision test
+        overlapping = canvas.find_overlapping(*edge_coord)
 
         for v in vertex_list:
             if v.canvas_id in overlapping:
-                return False
-
-        # Collision detection with line segment - circle intersection
-        # https://www.geeksforgeeks.org/check-line-touches-intersects-circle/
+                if discriminant_test(edge_coord, v):
+                    return True
         
+        return False
+
+def discriminant_test(coord: list, vertex: Vertex) -> bool:
+    x0, y0, x1, y1 = coord
+
+    # Set discriminant
+    a = (x1 - x0) ** 2 + (y1 - y0) ** 2
+    b = 2 * (x1 - x0) * (x0 - vertex.x) + 2 * (y1 - y0) * (y0 - vertex.y)
+    c = (x0 - vertex.x) ** 2 + (y0 - vertex.y) ** 2 - 15 ** 2
+
+    D = b ** 2 - 4 * a * c
+
+    if D >= 0:
         return True
+    else:
+        return False
 
 def weight_validate(input: str) -> bool:
     if input.isdigit() or input == "":
