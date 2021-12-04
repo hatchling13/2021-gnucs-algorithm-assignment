@@ -1,3 +1,4 @@
+from sys import maxsize
 import heapq
 
 class Vertex:
@@ -67,37 +68,37 @@ class Mst:
         return result
 
     def prim(self, *, half=False) -> list:
-        start = self.get_vertex(0)
-        connected = [start]
         result_edge = []
+        key = [maxsize] * len(self._vertex)
 
         epoch = len(self._vertex)
         if half == True:
-            epoch = epoch // 2 - 1
+            epoch = epoch // 2
         
-        candidate = self.get_edge_by_vertex(start)
-        heapq.heapify(candidate)
+        root = self.get_vertex(0)
+        connected = set()
+        connected.add(root)
 
-        while candidate:
-            if len(connected) > epoch:
-                break
+        linked = self.get_edge_by_vertex(root)
 
-            edge: Edge = heapq.heappop(candidate)
+        heapq.heapify(linked)
+
+        while len(connected) < epoch:
+            edge: Edge = heapq.heappop(linked)
 
             if edge.start not in connected:
-                connected.append(edge.start)
+                connected.add(edge.start)
                 result_edge.append(edge)
+
+                for e in self.get_edge_by_vertex(edge.start):
+                    heapq.heappush(linked, e)
 
             if edge.end not in connected:
-                connected.append(edge.end)
+                connected.add(edge.end)
                 result_edge.append(edge)
 
-            for e in self.get_edge_by_vertex(edge.end):
-                if e.start not in connected:
-                    heapq.heappush(candidate, e)
-                
-                if e.end not in connected:
-                    heapq.heappush(candidate, e)
+                for e in self.get_edge_by_vertex(edge.end):
+                    heapq.heappush(linked, e)
 
         return result_edge
 
@@ -112,20 +113,24 @@ class Mst:
             root_a = find(parent, a)
             root_b = find(parent, b)
 
-            if root_a.value < root_b.value:
-                parent[b] = a
-            else:
-                parent[a] = b
+            if root_a.value != root_b.value:
+                if rank[root_a] > rank[root_b]:
+                    parent[root_b] = root_a
+                else:
+                    parent[root_a] = root_b
+                    if rank[root_a] == rank[root_b]:
+                        rank[root_b] += 1
 
         edge_list = [e for e in self._edge]
         heapq.heapify(edge_list)
 
         parent = {v: v for v in self._vertex}
+        rank = {v: 0 for v in self._vertex}
         result_edge = []
 
         epoch = len(self._vertex) - 1
         if half == True:
-            epoch = epoch // 2 - 1
+            epoch = epoch // 2
 
         while len(result_edge) < epoch:
             edge: Edge = heapq.heappop(edge_list)
