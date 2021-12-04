@@ -168,6 +168,13 @@ class Gui:
                 canvas.delete(weight_background_id)
                 canvas.delete(edge_id)
                 messagebox.showerror('입력 오류', '간선과 겹치는 정점이 있습니다.')
+
+            elif self.duplication_detect(edge_coord):
+                canvas.delete(weight_id)
+                canvas.delete(weight_background_id)
+                canvas.delete(edge_id)
+                messagebox.showerror('입력 오류', '이미 존재하는 간선입니다.')
+
             else:
                 self._tree.add_edge(selected_src, selected_dst, int(weight))
     
@@ -244,6 +251,22 @@ class Gui:
             if v.canvas_id in overlapping:
                 if discriminant_test(edge_coord, v):
                     return True
+        
+        return False
+
+    def duplication_detect(self, edge_coord: list) -> bool:
+        new_edge_start = (edge_coord[0], edge_coord[1])
+        new_edge_end = (edge_coord[2], edge_coord[3])
+        
+        for edge in self._tree._edge:
+            existing_edge_start = (edge.start.x, edge.start.y)
+            existing_edge_end = (edge.end.x, edge.end.y)
+
+            if new_edge_start == existing_edge_start and new_edge_end == existing_edge_end:
+                return True
+
+            if new_edge_start == existing_edge_end and new_edge_end == existing_edge_start:
+                return True
         
         return False
 
