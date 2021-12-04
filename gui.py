@@ -173,10 +173,12 @@ class Gui:
     
     def half_button_pressed(self):
         self.prim_canvas.delete('all')
+        self.kruskal_canvas.delete('all')
         self.draw_result(half=True)
 
     def result_button_pressed(self):
         self.prim_canvas.delete('all')
+        self.kruskal_canvas.delete('all')
         self.draw_result()
 
     def draw_result(self, *, half=False):
@@ -188,10 +190,14 @@ class Gui:
 
         if half == True:
             prim_edge = self._tree.prim(half=True)
-            kruskal_edge = self._tree.kruskal(half=True)
 
             for e in prim_edge:
                 self.draw_result_edge(e, 'prim', input_width, prim_width)
+
+            kruskal_edge = self._tree.kruskal(half=True)
+
+            for e in kruskal_edge:
+                self.draw_result_edge(e, 'kruskal', input_width, kruskal_width)
 
         else:
             prim_edge = self._tree.prim()
@@ -199,6 +205,11 @@ class Gui:
 
             for e in prim_edge:
                 self.draw_result_edge(e, 'prim', input_width, prim_width)
+
+            kruskal_edge = self._tree.kruskal()
+
+            for e in kruskal_edge:
+                self.draw_result_edge(e, 'kruskal', input_width, kruskal_width)
 
     def draw_result_vertex(self, input_width: int, prim_width: int, kruskal_width: int):
         for v in self._tree._vertex:

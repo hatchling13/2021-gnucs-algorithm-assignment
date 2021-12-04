@@ -1,4 +1,3 @@
-from collections import deque
 import heapq
 
 class Vertex:
@@ -74,13 +73,13 @@ class Mst:
 
         epoch = len(self._vertex)
         if half == True:
-            epoch //= 2
+            epoch = epoch // 2 - 1
         
         candidate = self.get_edge_by_vertex(start)
         heapq.heapify(candidate)
 
         while candidate:
-            if len(connected) >= epoch:
+            if len(connected) > epoch:
                 break
 
             edge: Edge = heapq.heappop(candidate)
@@ -103,4 +102,36 @@ class Mst:
         return result_edge
 
     def kruskal(self, *, half=False) -> list:
-        pass
+        def find(parent: dict, x: Vertex) -> Vertex:
+            if parent[x] == x:
+                return x
+            parent[x] = find(parent, parent[x])
+            return parent[x]
+        
+        def union(parent: list, a: int, b: int):
+            root_a = find(parent, a)
+            root_b = find(parent, b)
+
+            if root_a.value < root_b.value:
+                parent[b] = a
+            else:
+                parent[a] = b
+
+        edge_list = [e for e in self._edge]
+        heapq.heapify(edge_list)
+
+        parent = {v: v for v in self._vertex}
+        result_edge = []
+
+        epoch = len(self._vertex) - 1
+        if half == True:
+            epoch = epoch // 2 - 1
+
+        while len(result_edge) < epoch:
+            edge: Edge = heapq.heappop(edge_list)
+
+            if find(parent, edge.start) != find(parent, edge.end):
+                union(parent, edge.start, edge.end)
+                result_edge.append(edge)
+
+        return result_edge
