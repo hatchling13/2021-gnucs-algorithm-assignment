@@ -1,6 +1,5 @@
 from collections import deque
-from sys import maxsize
-from tkinter.constants import S
+import heapq
 
 class Vertex:
     x = 0
@@ -22,6 +21,17 @@ class Edge:
         self.start = start
         self.end = end
         self.weight = weight
+
+    def __lt__(self, other):
+        return self.weight < other.weight
+
+    def get_connected_vertex(self, v: Vertex) -> Vertex:
+        if self.start is v:
+            return self.end
+        elif self.end is v:
+            return self.start
+        else:
+            return None
 
 class Mst:
     _count = 0
@@ -57,15 +67,40 @@ class Mst:
         
         return result
 
-    def prim(self, *, half=False):
+    def prim(self, *, half=False) -> list:
         start = self.get_vertex(0)
         connected = [start]
+        result_edge = []
 
-        for edge in self.get_edge_by_vertex(start):
-            pass
+        epoch = len(self._vertex)
+        if half == True:
+            epoch //= 2
+        
+        candidate = self.get_edge_by_vertex(start)
+        heapq.heapify(candidate)
 
-        while len(self._vertex) != len(connected):
-            pass
+        while candidate:
+            if len(connected) >= epoch:
+                break
 
-    def kruskal(self, *, half=False):
+            edge: Edge = heapq.heappop(candidate)
+
+            if edge.start not in connected:
+                connected.append(edge.start)
+                result_edge.append(edge)
+
+            if edge.end not in connected:
+                connected.append(edge.end)
+                result_edge.append(edge)
+
+            for e in self.get_edge_by_vertex(edge.end):
+                if e.start not in connected:
+                    heapq.heappush(candidate, e)
+                
+                if e.end not in connected:
+                    heapq.heappush(candidate, e)
+
+        return result_edge
+
+    def kruskal(self, *, half=False) -> list:
         pass

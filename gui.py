@@ -172,22 +172,35 @@ class Gui:
                 self._tree.add_edge(selected_src, selected_dst, int(weight))
     
     def half_button_pressed(self):
-        self._tree.prim(half=True)
-        self._tree.kruskal(half=True)
-
-        self.draw_result_vertex()
+        self.prim_canvas.delete('all')
+        self.draw_result(half=True)
 
     def result_button_pressed(self):
-        self._tree.prim()
-        self._tree.kruskal()
+        self.prim_canvas.delete('all')
+        self.draw_result()
 
-        self.draw_result_vertex()
-
-    def draw_result_vertex(self):
+    def draw_result(self, *, half=False):
         input_width = self.input_canvas.winfo_width()
         prim_width = self.prim_canvas.winfo_width()
         kruskal_width = self.kruskal_canvas.winfo_width()
 
+        self.draw_result_vertex(input_width, prim_width, kruskal_width)
+
+        if half == True:
+            prim_edge = self._tree.prim(half=True)
+            kruskal_edge = self._tree.kruskal(half=True)
+
+            for e in prim_edge:
+                self.draw_result_edge(e, 'prim', input_width, prim_width)
+
+        else:
+            prim_edge = self._tree.prim()
+            kruskal_edge = self._tree.kruskal()
+
+            for e in prim_edge:
+                self.draw_result_edge(e, 'prim', input_width, prim_width)
+
+    def draw_result_vertex(self, input_width: int, prim_width: int, kruskal_width: int):
         for v in self._tree._vertex:
             prim_proportional_x = int(prim_width / input_width * v.x)
 
@@ -198,6 +211,17 @@ class Gui:
 
             circle_tuple = calc_circle(kruskal_proportional_x, v.y, 15)
             self.kruskal_canvas.create_oval(circle_tuple, fill='black')
+
+    def draw_result_edge(self, edge: Edge, algorithm: str, input_width: int, result_width: int):
+        start_proportional_x = int(result_width / input_width * edge.start.x)
+        end_proportional_x = int(result_width / input_width * edge.end.x)
+        
+        if algorithm == 'prim':
+            self.prim_canvas.create_line(start_proportional_x, edge.start.y, end_proportional_x, edge.end.y)
+        elif algorithm == 'kruskal':
+            self.kruskal_canvas.create_line(start_proportional_x, edge.start.y, end_proportional_x, edge.end.y)
+        else:
+            messagebox.showerror('내부 오류', '알 수 없는 알고리즘입니다.')
 
     def collision_detect(self, edge_coord: list, vertex_list: list) -> bool:
         canvas: Canvas = self.input_canvas
