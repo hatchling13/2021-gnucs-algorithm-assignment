@@ -69,7 +69,6 @@ class Mst:
 
     def prim(self, *, half=False) -> list:
         result_edge = []
-        key = [maxsize] * len(self._vertex)
 
         epoch = len(self._vertex)
         if half == True:
